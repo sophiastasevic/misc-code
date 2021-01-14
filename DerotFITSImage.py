@@ -1,6 +1,5 @@
 #script to derotate data using angles from image header
-#create file called 'starnames.txt' with names of stars needing to be derotated
-#with the name in the form 'HIP_#####' 
+#create file called 'starnames.txt' with names of stars needing to be derotated with the name in the form 'HIP_#####' 
 
 import scipy 
 import numpy as np
@@ -12,7 +11,7 @@ warnings.simplefilter("ignore")
 #reads in the names of the images
 def ReadIn(name):
     
-    file_names=np.loadtxt('{name}_filenames.txt'.format(name=name),dtype=str)
+    file_names=np.loadtxt('{name}_filenames.txt'.format(name=name),dtype=str) #names of individual frames
     for i in range(0,file_names.size):
         file_names[i] = file_names[i].rstrip()
     return file_names
