@@ -29,7 +29,7 @@ def RotCube(name,angles):
         
     hdu_new = fits.PrimaryHDU(rot_cube)
     hdul_new = fits.HDUList([hdu_new])
-    hdul_new.writeto('derot_centeredcube_{name}'.format(name=name)) #saves new derotated cube
+    hdul_new.writeto('derot_centeredcube_{name}.fits'.format(name=name)) #saves new derotated cube
     #plt.imshow(img_rot, origin='lower')
     
 #same as above but for derotating only a single image
@@ -40,7 +40,7 @@ def RotImage(name,angle):
     img_rot=scipy.ndimage.rotate(img,angle)
     hdu_new = fits.PrimaryHDU(img_rot)
     hdul_new = fits.HDUList([hdu_new])
-    hdul_new.writeto('derot_{name}'.format(name=name)
+    hdul_new.writeto('derot_{name}.fits'.format(name=name)
     plt.imshow(img_rot, origin='lower')
 
 #reads in header of each individual science cube frame and calculates the correction angle
