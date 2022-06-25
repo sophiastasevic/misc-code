@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable_recipe
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="ExecutableRecipe.xsd">
+    <!-- The frame types declared here will be created
+    in the datacenter. -->
+    <sphere pipeline="test" user="yuchen.bai@univ-grenoble-alpes.fr"/>
+    <frame_types>
+        <frame_type name="IRD_CORR_MATRIX" description="type correlation matrix"/>
+        <frame_type name="IRD_SCIENCE_PARA_ROTATION_CUBE" description="Derotation angles"/>
+        <frame_type name="IRD_SCIENCE_REDUCED_MASTER_CUBE" description="Science and reference master cubes to reduce"/>
+        <frame_type name="IRD_SCIENCE_REDUCED_MASTER_CUBE_FAKE_COMP" description="Science and reference master cubes with fake injection"/>
+        <frame_type name="IRD_RDI_RES_FAKE_INJECTION" description="RDI reduced image for channel 0 or 1 with fake injection"/>
+        <frame_type name="IRD_RDI_RES_REAL" description="RDI reduced image for channel 0 or 1 without fake injection"/>
+        <frame_type name="IRD_SELECTED_REFERENCE_FRAMES" description="Reference frames selected for a given science master cube"/>
+    </frame_types>
+
+    <!-- ==Recipe== -->
+    <recipe name="ird_rdi_reduce" instrument="IRDIS">
+        <synopsis value="ird_rdi_reduce"/>
+        <description short="Apply the rdi method of vip_hci to produce a final reduced image with correlation matrix" full=""/>
+        <author email="yuchen.bai@univ-grenoble-alpes.fr" name="Yuchen BAI"/>
+        <license value="GPL"/>
+    </recipe>
+    <!-- ==Executable== -->
+    <!-- The binary path (or value) can be empty if the binary
+    is in path (or the script extension is sufficient). -->
+    <executable>
+       <binary value="/dwh/sphere-exec-env/python3/.env_conda/bin/python"/>
+       <script value="ird_rdi_reduce.py"/>
+       <includes>
+            <include regex=".*\.py"/>
+        </includes>
+    </executable>
+    <!-- ==Inputs== -->
+    <!-- With sof="false" min & max must be set to 1 (no optional input,
+    no wildcards allowed.). In this case, you must specify the
+    filename_parameter (can be $1, $2... for inline parameter ).
+     -->
+    <inputs use_sof="true">
+        <input_frame min="0" max="1">
+            <frame_type value="IRD_SCIENCE_REDUCED_MASTER_CUBE"/>
+            <!--filename_parameter value="$1"/-->
+            <description value="Science and reference master cubes to reduce"/>
+        </input_frame>
+        <input_frame min="0" max="1">
+            <frame_type value="IRD_SCIENCE_REDUCED_MASTER_CUBE_FAKE_COMP"/>
+            <!--filename_parameter value="$1"/-->
+            <description value="Science and reference master cubes with fake injection"/>
+        </input_frame>
+        <input_frame min="1" max="1">
+            <frame_type value="IRD_CORR_MATRIX"/>
+            <!--filename_parameter value="$1"/-->
+            <description value="Science and reference master cubes to reduce"/>
+        </input_frame>
+        <input_frame min="1" max="1">
+            <frame_type value="IRD_SCIENCE_PARA_ROTATION_CUBE"/>
+            <!--filename_parameter value="$1"/-->
+            <description value="The correlation matrix we will use."/>
+        </input_frame>
+    </inputs>
+    <!-- ==Outputs== -->
+    <!-- Set use_filename_parameter="false" for static output filenames.
+    Otherwise fill the filename_parameter with the corresponding parameter
+    name. -->
+    <!-- Extra outputs are used to set the frame types of all outputs not known
+      by filenames. The extra_output_frame tags are used in appearing order. -->
+    <outputs use_filename_parameter="false">
+        <output_frame format="FITS">
+            <frame_type value="IRD_RDI_RES_REAL"/>
+            <default_name value="rdi_real_res_0.fits"/>
+            <filename_parameter value=""/>
+            <description value="the result of RDI reduction on wave length=0"/>
+        </output_frame>
+        <output_frame format="FITS">
+            <frame_type value="IRD_RDI_RES_REAL"/>
+            <default_name value="rdi_real_res_1.fits"/>
+            <filename_parameter value=""/>
+            <description value="the result of RDI reduction on wave length=1"/>
+        </output_frame>
+        <output_frame format="FITS">
+            <frame_type value="IRD_RDI_RES_FAKE_INJECTION"/>
+            <default_name value="rdi_fake_res_0.fits"/>
+            <filename_parameter value=""/>
+            <description value="the result of RDI reduction on wave length=0"/>
+        </output_frame>
+        <output_frame format="FITS">
+            <frame_type value="IRD_RDI_RES_FAKE_INJECTION"/>
+            <default_name value="rdi_fake_res_1.fits"/>
+            <filename_parameter value=""/>
+            <description value="the result of RDI reduction on wave length=1"/>
+        </output_frame>
+        <output_frame format="FITS">
+            <frame_type value="IRD_SELECTED_REFERENCE_FRAMES"/>
+            <default_name value="reference_cube.fits"/>
+            <filename_parameter value=""/>
+            <description value="the cube of selected reference frames"/>
+        </output_frame>
+    </outputs>
+    <!-- ==Parameters== -->
+    <!-- For inline parameters (without name), optional must be "false"
+    , and the parameter name must be $1, $2, etc. -->
+    <!-- If an option description contains "0 = Lorem, 1 = Ipsum" for
+    an integer type, it will be displayed as a combo list. -->
+    <!-- Options without value must have the type "flag" and be used
+    as a boolean-->
+    <parameters prefix="--">
+        <parameter name="score" optional="true">
+            <default_value value="1"/>
+            <type value="int"/>
+            <description value="Score is used to measure how good a reference frame is."/>
+        </parameter>
+        <parameter name="pct" optional="true">
+            <default_value value="empty"/>
+            <type value="string"/>
+            <description value="Number of modes used by PCA."/>
+        </parameter>
+        <parameter name="n_corr" optional="true">
+            <default_value value="empty"/>
+            <type value="string"/>
+            <description value="Number of best correlated frames."/>
+        </parameter>
+
+        <parameter name="--save_lib" optional="true">
+            <default_value value="FALSE"/>
+            <type value="flag"/>
+            <description value="if True save the library of reference frames. In this case only one value for pct, n_corr and score must be used. False by default"/>
+        </parameter>
+        <!-- PCA parameters -->
+        <parameter name="ncomp" optional="true">
+            <default_value value="empty"/>
+            <type value="string"/>
+            <description value="Number of modes used by PCA."/>
+        </parameter>
+        <parameter name="scaling" optional="true">
+            <default_value value="0"/>
+            <type value="int"/>
+            <description value="Scaling. 0=spat-mean, 1=spat-standard, 2=temp-mean, 3=temp-standard, 4=None. Default is 0."/>
+        </parameter>
+    </parameters>
+</executable_recipe>
+

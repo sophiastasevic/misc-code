@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable_recipe
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="ExecutableRecipe.xsd">
+    <!-- The frame types declared here will be created
+    in the datacenter. -->
+    <sphere pipeline="test" user="sophia.stasevic@univ-grenoble-alpes.fr"/>
+    <frame_types>
+        <frame_type name="IRD_REFERENCE_CUBE" description="Reference library for a given science master cube"/>
+        <frame_type name="IRD_REFERENCE_TABLE" description="Binary FITS table containing target, observation, and reference library information."/>
+    </frame_types>
+
+    <!-- ==Recipe== -->
+    <recipe name="ird_rdi_create_ref_cube" instrument="IRDIS">
+        <synopsis value="ird_rdi_create_ref_cube"/>
+        <description short="Produce a reference cube containing reference target frames best correlated to the science frames." full=""/>
+        <author email="sophia.stasevic@univ-grenoble-alpes.fr" name="Sophia Stasevic"/>
+        <license value="GPL"/>
+    </recipe>
+    <!-- ==Executable== -->
+    <!-- The binary path (or value) can be empty if the binary
+    is in path (or the script extension is sufficient). -->
+    <executable>
+       <binary value="/dwh/sphere-exec-env/python3/.env_conda/bin/python"/>
+       <script value="ird_rdi_create_ref_cube.py"/>
+    </executable>
+    <!-- ==Inputs== -->
+    <!-- With sof="false" min & max must be set to 1 (no optional input,
+    no wildcards allowed.). In this case, you must specify the
+    filename_parameter (can be $1, $2... for inline parameter ).
+    -->
+    <inputs use_sof="true">
+        <input_frame min="1" max="1">
+            <frame_type value="IRD_SCIENCE_REDUCED_MASTER_CUBE"/>
+            <!--filename_parameter value="$1"/-->
+            <description value="Reduced IRD science cube"/>
+        </input_frame>
+        <input_frame min="0" max="1">
+            <frame_type value="IRD_FRAME_SELECTION_VECTOR"/>
+            <!--filename_parameter value="$1"/-->
+            <description value="Frame selection vector. 1 is frame is selected, 0 if rejected."/>
+        </input_frame>
+        <input_frame min="1" max="1">
+            <frame_type value="IRD_CORR_MATRIX"/>
+            <!--filename_parameter value="$1"/-->
+            <description value="Correlation matrix of science and reference frames."/>
+        </input_frame>
+    </inputs>
+    <!-- ==Outputs== -->
+    <!-- Set use_filename_parameter="false" for static output filenames.
+    Otherwise fill the filename_parameter with the corresponding parameter
+    name. -->
+    <!-- Extra outputs are used to set the frame types of all outputs not known
+      by filenames. The extra_output_frame tags are used in appearing order. -->
+    <outputs use_filename_parameter="false">
+        <output_frame format="FITS">
+            <frame_type value="IRD_REFERENCE_CUBE"/>
+            <default_name value="reference_cube_wl*.fits"/>
+            <filename_parameter value=""/>
+            <description value="Reference cube for single wavelength channel."/>
+        </output_frame>
+        <output_frame format="FITS">
+            <frame_type value="IRD_REFERENCE_TABLE"/>
+            <default_name value="target_info_table_wl*.fits"/>
+            <filename_parameter value=""/>
+            <description value="Binary FITS table containing target, observation, and reference library information for all data cubes used."/>
+        </output_frame>
+    </outputs>
+    <!-- ==Parameters== -->
+    <!-- For inline parameters (without name), optional must be "false"
+    , and the parameter name must be $1, $2, etc. -->
+    <!-- If an option description contains "0 = Lorem, 1 = Ipsum" for
+    an integer type, it will be displayed as a combo list. -->
+    <!-- Options without value must have the type "flag" and be used
+    as a boolean-->
+    <parameters prefix="--">
+        <parameter name="score" optional="true">
+            <default_value value="10"/>
+            <type value="int"/>
+            <description value="Minimum reference frame score for selection"/>
+        </parameter>
+        <parameter name="ncorr" optional="true">
+            <default_value value="100"/>
+            <type value="int"/>
+            <description value="Number of best correlated reference frames of a science frame given +1 score."/>
+        </parameter>
+        <parameter name="crop" optional="true">
+            <default_value value=""/>
+            <type value="int"/>
+            <description value="Size to crop reference frames to in px. Leave empty to keep original frame size"/>
+        </parameter>
+        <parameter name="max_frames" optional="true">
+            <default_value value=""/>
+            <type value="int"/>
+            <description value="Maximum reference frames to put in library."/>
+        </parameter>
+        <parameter name="use_select_vect" optional="true">
+            <default_value value="FALSE"/>
+            <type value="flag"/>
+            <description value="Use frame selection vector for science cube frames. If True, MUST be included in Inputs."/>
+        </parameter>
+    </parameters>
+</executable_recipe>
+
